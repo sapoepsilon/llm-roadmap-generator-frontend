@@ -1,0 +1,4 @@
+1. Follow @frontend_llm_guidelines.md file in the root directory for each prompt
+2. Maintain a readme file for the documentation and edit it as needed
+3. Use documentation that would help to understand the code better
+4. I am using the tailwind css v4

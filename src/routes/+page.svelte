@@ -1,16 +1,48 @@
 <!-- src/routes/+page.svelte -->
 <script>
-	import axios from 'axios';
 	import { Label } from '$lib/components/ui/label';
 	import { Input } from '$lib/components/ui/input';
 	import { Button } from '$lib/components/ui/button';
+	import { Tabs, TabsContent, TabsList, TabsTrigger } from "$lib/components/ui/tabs";
+	import RoadmapDisplay from '$lib/components/RoadmapDisplay.svelte';
+	import LoadingIndicator from '$lib/components/LoadingIndicator.svelte';
+	import ErrorMessage from '$lib/components/ErrorMessage.svelte';
+	import Chat from '$lib/components/Chat.svelte';
 
+	/**
+	 * Stores the user's input description of their idea
+	 * @type {string}
+	 */
 	let ideaDescription = '';
+
+	/**
+	 * Stores the generated roadmap output from the API
+	 * @type {string | null}
+	 */
 	let roadmapOutput = null;
+
+	/**
+	 * Stores the conversation ID for follow-up questions
+	 * @type {string | null}
+	 */
 	let conversationId = null;
+
+	/**
+	 * Tracks the loading state during API calls
+	 * @type {boolean}
+	 */
 	let loading = false;
+
+	/**
+	 * Stores any error messages
+	 * @type {string}
+	 */
 	let errorMessage = '';
 
+	/**
+	 * Generates a roadmap based on the user's idea description
+	 * Makes an API call to the backend service and handles the response
+	 */
 	async function generateRoadmap() {
 		loading = true;
 		errorMessage = '';
@@ -18,76 +50,72 @@
 		conversationId = null;
 
 		try {
-			const response = await axios.post('http://localhost:3000/generate-roadmap', {
-				ideaDescription
+			console.log(`ideaDescription: ${ideaDescription}`);
+			const response = await fetch('http://localhost:3000/generate-roadmap', {
+				method: 'POST',
+				headers: {
+					'Content-Type': 'application/json',
+					Accept: 'application/json'
+				},
+				body: JSON.stringify({ ideaDescription })
 			});
-			conversationId = response.data.conversationId;
-			console.log('Received conversationId:', conversationId);
-			roadmapOutput = response.data.roadmap;
+
+			if (!response.ok) {
+				throw new Error(`HTTP error! status: ${response.status}`);
+			}
+
+			const data = await response.json();
+			console.log(`data: ${JSON.stringify(data)}`);
+			conversationId = data.conversationId;
+			roadmapOutput = data.roadmap;
 		} catch (error) {
 			console.error('Error calling backend API:', error);
-			errorMessage = 'Failed to generate roadmap. Please check console for details.';
+			errorMessage = 'Failed to generate roadmap. Please try again later.';
 		} finally {
 			loading = false;
 		}
 	}
 </script>
 
-<main>
-	<h1>MVP Roadmap Generator</h1>
+<main class="container mx-auto max-w-4xl px-4 py-8">
+	<h1 class="mb-8 text-center text-4xl font-bold">MVP Roadmap Generator</h1>
 
-	<Label for="idea">Idea Description</Label>
-	<Input
-		id="idea"
-		bind:value={ideaDescription}
-		placeholder="Enter your idea description here..."
-		class="mb-4 w-full"
-	/>
+	<Tabs defaultValue="roadmap" class="w-full">
+		<TabsList class="grid w-full grid-cols-2">
+			<TabsTrigger value="roadmap">Roadmap</TabsTrigger>
+			<TabsTrigger value="chat">Chat</TabsTrigger>
+		</TabsList>
+		<TabsContent value="roadmap">
+			<div class="space-y-4">
+				<div class="space-y-2">
+					<Label for="idea" class="text-lg">Idea Description</Label>
+					<Input
+						id="idea"
+						bind:value={ideaDescription}
+						placeholder="Enter your idea description here..."
+						class="w-full"
+					/>
+				</div>
 
-	<Button on:click={generateRoadmap} disabled={loading}>
-		{#if loading}
-			Generating Roadmap...
-		{:else}
-			Generate Roadmap
-		{/if}
-	</Button>
+				<Button on:click={generateRoadmap} disabled={loading} class="w-full sm:w-auto">
+					{#if loading}
+						<LoadingIndicator message="Generating Roadmap..." />
+					{:else}
+						Generate Roadmap
+					{/if}
+				</Button>
 
-	{#if errorMessage}
-		<p class="error">Error: {errorMessage}</p>
-	{/if}
+				{#if errorMessage}
+					<ErrorMessage message={errorMessage} />
+				{/if}
 
-	{#if roadmapOutput}
-		<h2>Roadmap Output:</h2>
-		<pre>{JSON.stringify(roadmapOutput, null, 2)}</pre>
-	{/if}
-
-	{#if conversationId}
-		<h2>Conversation ID:</h2>
-		<pre>{conversationId}</pre>
-	{/if}
+				{#if roadmapOutput}
+					<RoadmapDisplay roadmap={roadmapOutput} />
+				{/if}
+			</div>
+		</TabsContent>
+		<TabsContent value="chat">
+			<Chat />
+		</TabsContent>
+	</Tabs>
 </main>
-
-<style>
-	main {
-		display: flex;
-		flex-direction: column;
-		align-items: center;
-		padding: 20px;
-	}
-
-	.error {
-		color: red;
-		margin-top: 10px;
-	}
-
-	pre {
-		background-color: #f4f4f4;
-		padding: 10px;
-		border: 1px solid #ddd;
-		border-radius: 4px;
-		overflow-x: auto; /* Enable horizontal scrolling for long output */
-		white-space: pre-wrap; /* Wrap long lines */
-		margin-top: 20px;
-		font-size: 0.9em;
-	}
-</style>

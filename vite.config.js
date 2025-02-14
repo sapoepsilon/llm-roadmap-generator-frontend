@@ -5,7 +5,14 @@ import { defineConfig } from 'vite';
 
 export default defineConfig({
 	plugins: [sveltekit(), tailwindcss()],
-
+	build: {
+		sourcemap: true,
+		rollupOptions: {
+			output: {
+				sourcemapExcludeSources: true
+			}
+		}
+	},
 	test: {
 		workspace: [
 			{

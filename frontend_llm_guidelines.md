@@ -9,6 +9,7 @@ The Svelte frontend is built using SvelteKit, providing a component-based archit
 - **Progressive enhancement** strategy using Melt UI components
 - **API-first approach** for integration with Node.js backend services
 - **Tailwind CSS** for consistent styling and responsive design. I am using the tailwind css v4
+- **JavaScript** as the primary programming language for component logic and data handling
 - **No usage of SvelteKit's built-in backend features**; instead, communicate with our custom Node.js/Express backend via API calls. It runs on a local dev server port 3000.
 
 ## 2. Component-Based Architecture
@@ -49,7 +50,7 @@ Key data points:
 - `conversationId`: Session identifier for follow-up questions
 - `roadmapOutput`: Processed JSON from backend
 
-## 4. Melt UI Integration
+## 4. JavaScript and Melt UI Integration
 
 ```bash
 npm install @melt-ui/svelte @melt-ui/recipes
@@ -61,6 +62,11 @@ Implementation Strategy:
 2. Implement accessible loading states using Melt transitions
 3. Style roadmap output using Melt's composable primitives
 4. Maintain theme consistency through CSS variables
+5. Utilize JavaScript for:
+   - Data transformation and manipulation
+   - Event handling and user interactions
+   - API integration and state management
+   - Dynamic UI updates and animations
 
 ## 5. Future Enhancements
 
